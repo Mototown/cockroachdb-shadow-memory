@@ -7,3 +7,5 @@
 .cursor/
 .env
 __pycache__/
+.cursor/
+.env
