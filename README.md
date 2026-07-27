@@ -1,4 +1,4 @@
-# Quorum Shadow Memory - CockroachDB x AWS Hackathon
+# ShadowSense - CockroachDB Shadow Memory
 **Build an agentic application that uses CockroachDB as its persistent memory layer, deployed on AWS**
 
 ### One Line: Memory is not an afterthought, it is the safety system
