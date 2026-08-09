@@ -1,11 +1,8 @@
-
-# secrets
-.env
-.cursor/
-*.crt
-
-.cursor/
 .env
 __pycache__/
+*.pyc
+.DS_Store
+.venv/
+venv/
+*.crt
 .cursor/
-.env
