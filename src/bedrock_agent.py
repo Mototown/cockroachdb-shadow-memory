@@ -5,7 +5,7 @@ Demonstrates:
 - Distributed Vector Indexing for semantic memory retrieval
 - SERIALIZABLE transactions for safety-critical claims
 - Path to CockroachDB Cloud Managed MCP Server for production agent access
-- Amazon Bedrock for reasoning
+- Amazon Bedrock for reasoning (Claude Haiku 4.5 — active model)
 """
 
 import os
@@ -23,6 +23,9 @@ try:
 except ImportError:
     boto3 = None
 
+# Active model — do not use anthropic.claude-3-haiku-20240307-v1:0 (EOL Sept 10, 2026)
+DEFAULT_BEDROCK_MODEL = "anthropic.claude-haiku-4-5-20251001-v1:0"
+
 
 class ShadowMemoryAgent:
     """Agent whose memory is CockroachDB."""
@@ -34,7 +37,10 @@ class ShadowMemoryAgent:
 
         self.bedrock = None
         if boto3 and os.getenv("MOCK_AWS") != "1":
-            self.bedrock = boto3.client("bedrock-runtime", region_name=os.getenv("AWS_REGION", "us-west-2"))
+            self.bedrock = boto3.client(
+                "bedrock-runtime",
+                region_name=os.getenv("AWS_REGION", "us-west-2"),
+            )
 
     def query_similar_memories(self, query_embedding: List[float], limit: int = 5) -> List[Any]:
         """
@@ -47,7 +53,6 @@ class ShadowMemoryAgent:
         conn = psycopg2.connect(self.cockroach_url)
         try:
             with conn.cursor() as cur:
-                # Vector distance operator — core of Distributed Vector Indexing
                 cur.execute(
                     """
                     SELECT id, sun_azimuth, sun_elevation, risk_level, aisle_id,
@@ -63,7 +68,7 @@ class ShadowMemoryAgent:
             conn.close()
 
     def reason(self, similar_memories: List[Any], current_features: dict) -> dict:
-        """Use Bedrock (Claude) to reason over retrieved memory."""
+        """Use Bedrock (Claude Haiku 4.5) to reason over retrieved memory."""
         prompt = f"""
 You are a warehouse safety agent. Your long-term memory is CockroachDB.
 
@@ -85,6 +90,8 @@ Respond with JSON only:
                 "confidence": 0.91,
             }
 
+        model_id = os.getenv("BEDROCK_MODEL_ID", DEFAULT_BEDROCK_MODEL)
+
         body = json.dumps({
             "anthropic_version": "bedrock-2023-05-31",
             "max_tokens": 512,
@@ -92,7 +99,7 @@ Respond with JSON only:
         })
 
         resp = self.bedrock.invoke_model(
-            modelId=os.getenv("BEDROCK_MODEL_ID", "anthropic.claude-3-5-sonnet-20241022-v2:0"),
+            modelId=model_id,
             body=body,
             contentType="application/json",
             accept="application/json",
@@ -109,7 +116,7 @@ Respond with JSON only:
         Demonstrate production-grade transactional memory.
 
         Uses SERIALIZABLE isolation so two concurrent agents cannot both
-        claim the same aisle and silently overwrite each other’s safety decision.
+        claim the same aisle and silently overwrite each other's safety decision.
         """
         conn = psycopg2.connect(self.cockroach_url)
         conn.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
@@ -159,7 +166,6 @@ if __name__ == "__main__":
         "aisle_id": "aisle_3",
     }
 
-    # Placeholder embedding for local demo (in production this comes from Bedrock Titan)
     mock_embedding = [0.1] * 1024
 
     print("Querying CockroachDB memory (Distributed Vector Indexing)...")
@@ -170,5 +176,7 @@ if __name__ == "__main__":
     print("Agent decision:", json.dumps(decision, indent=2))
 
     print("\nTesting SERIALIZABLE aisle claim...")
-    result = agent.claim_aisle_transactional("forklift_1", "00000000-0000-0000-0000-000000000001", "aisle_3")
+    result = agent.claim_aisle_transactional(
+        "forklift_1", "00000000-0000-0000-0000-000000000001", "aisle_3"
+    )
     print(result)
