@@ -6,7 +6,8 @@
 
 **Video:** https://www.youtube.com/watch?v=JoB-8OSoXlQ  
 **Repo:** https://github.com/Mototown/cockroachdb-shadow-memory  
-**Functional demo:** Run the one-command demo in the repo (see README). Judges can spin up a free CockroachDB Basic cluster in ~2 minutes and execute `python demo.py`.
+**Functional demo:** https://github.com/Mototown/cockroachdb-shadow-memory  
+(Clone → `pip install -r requirements.txt` → `streamlit run app.py`. The Streamlit app works fully in high-fidelity mock mode with zero credentials so judges can evaluate the memory layer immediately.)
 
 ---
 
@@ -31,16 +32,16 @@ Memory is no longer an afterthought — it is the product.
 - Python agent (`src/bedrock_agent.py`) that performs vector retrieval, Bedrock reasoning, and SERIALIZABLE claims.
 - Lambda-style extractor that writes both semantic and transactional memory in one flow.
 - `ccloud_setup.sh` for agent-ready cluster provisioning on AWS.
-- Full local demo that exercises the complete memory loop.
+- Interactive Streamlit functional demo (`app.py`) that exercises the complete memory loop and works with zero credentials.
 
 ### Challenges we ran into
-Making the memory layer production-grade (SERIALIZABLE isolation + MCP audit path) while keeping the demo one-command simple. Balancing mock mode for easy judging with real Bedrock + CockroachDB paths.
+Making the memory layer production-grade (SERIALIZABLE isolation + MCP audit path) while keeping the demo one-command simple and fully usable by judges without any external accounts.
 
 ### Accomplishments that we're proud of
 - True dual-purpose memory (vector + transactional) in a single database with no consistency gaps.
 - Safety-critical use case instead of generic chat history.
 - Clean mapping to three of the four required CockroachDB tools plus multiple AWS services.
-- Short, focused demo video that shows the memory layer working live.
+- Short, focused demo video + fully interactive Streamlit app that shows the memory layer working.
 
 ### What we learned
 Agentic systems fail when memory is treated as optional. CockroachDB’s combination of distributed SQL, vector indexing, and MCP support lets you treat memory as a first-class, resilient, auditable system of record.
@@ -73,8 +74,8 @@ Real camera integration, multi-region deployment for warehouse fleets, and tight
 - [x] Demo video <3 min, public on YouTube, shows memory layer
 - [x] Public repo + MIT license (detectable)
 - [x] Clear README + setup + run instructions
-- [x] Functional demo (one-command `demo.py` + free CockroachDB Basic cluster)
+- [x] Functional demo app that judges can run immediately (`streamlit run app.py` — works in mock mode with zero credentials)
 - [ ] Complete Devpost form (paste description + links + tool mapping above)
-- [ ] (Optional) Upload architectural diagram if you generate one
+- [ ] (Optional) Upload architectural diagram
 
 **Deadline reminder:** August 18, 2026 @ 5:00pm EDT
