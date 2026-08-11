@@ -10,6 +10,30 @@ Warehouse forklift accidents often happen at blind corners. Cameras can see a pe
 
 ---
 
+## Functional Demo (for Judges)
+
+The easiest way for judges to evaluate the project:
+
+```bash
+git clone https://github.com/Mototown/cockroachdb-shadow-memory.git
+cd cockroachdb-shadow-memory
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+The Streamlit app (`app.py`) runs a complete, interactive demonstration of the agentic memory loop:
+
+1. Semantic retrieval via **Distributed Vector Indexing**
+2. Agent reasoning over the retrieved memories
+3. **SERIALIZABLE** transactional claim on the aisle
+
+It works fully in high-fidelity **mock mode** (no credentials required) so judges can evaluate immediately.  
+A checkbox also allows connecting to a real CockroachDB cluster if a connection string is available.
+
+The same SQL shown in the demo is the exact query pattern used with the **Cloud Managed MCP Server** in production.
+
+---
+
 ## Architecture
 
 ```
@@ -26,7 +50,7 @@ Camera / Image → AWS Lambda (feature extract) → Amazon Bedrock Titan (embedd
 - One database for both semantic (vector) and transactional safety memory — no consistency gaps.
 - SERIALIZABLE isolation so concurrent agents cannot silently overwrite the same aisle claim.
 - Production path uses CockroachDB Cloud Managed MCP Server (read-only + full audit).
-- Local demo uses the exact same SQL the agent would issue through MCP.
+- Demo uses the exact same SQL the agent would issue through MCP.
 
 ---
 
@@ -62,23 +86,14 @@ Camera / Image → AWS Lambda (feature extract) → Amazon Bedrock Titan (embedd
 
 ---
 
-## Quick start (functional demo)
+## Local CLI Demo (optional)
 
 ```bash
-git clone https://github.com/Mototown/cockroachdb-shadow-memory.git
-cd cockroachdb-shadow-memory
-pip install -r requirements.txt
-cp .env.example .env
-# Edit .env and set COCKROACHDB_URL (create a free CockroachDB Basic cluster in ~2 minutes)
-
-# Apply schema once
-psql "$COCKROACHDB_URL" -f sql/schema.sql
-
-# Run the one-command demo (exercises vector search → reason → SERIALIZABLE claim)
+cp .env.example .env          # set COCKROACHDB_URL if desired
 python demo.py
 ```
 
-Set `MOCK_AWS=1` in `.env` to run without real Bedrock credentials (still fully exercises the CockroachDB memory layer).
+Set `MOCK_AWS=1` to run without real Bedrock credentials.
 
 ---
 
@@ -86,7 +101,8 @@ Set `MOCK_AWS=1` in `.env` to run without real Bedrock credentials (still fully 
 
 ```
 cockroachdb-shadow-memory/
-├── demo.py                          # One-command demo of the full memory loop
+├── app.py                           # Streamlit functional demo (primary for judges)
+├── demo.py                          # One-command CLI demo
 ├── src/
 │   ├── bedrock_agent.py             # Vector retrieval + Bedrock reasoning + SERIALIZABLE claim
 │   └── lambda_shadow_extractor.py   # AWS Lambda-style extractor → CockroachDB
